@@ -58,7 +58,7 @@ p{margin:0}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 /* ---------- prototype chrome (not part of product) ---------- */
-.proto{background:#131917;color:#dfe6e2;font-size:13px;padding:8px 16px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.proto{display:none!important}
 .proto b{color:#fff;letter-spacing:.02em}
 .proto .grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .proto label{color:#9fb0a8}
@@ -919,7 +919,7 @@ function footer(){
     <div><h3>A roads</h3><ul>${['a1','a14','a16','a17'].map(s=>`<li><a href="#road-${s}">${ROADS[s].label} rest areas</a></li>`).join('')}</ul></div>
     <div><h3>Regions</h3><ul>${['lincolnshire','east-midlands','yorkshire','east-of-england'].map(s=>`<li><a href="#region-${s}">${REGIONS[s].name}</a></li>`).join('')}</ul></div>
     <div><h3>Stop types</h3><ul>${TYPE_PAGES.map(([s,t])=>`<li><a href="#type-${s}">${t}</a></li>`).join('')}</ul></div></div>
-    <div class="small"><p><b>RestStop UK</b> · About · Suggest a correction · Privacy</p><p>Always follow road signs. Facilities and opening hours can change; each page shows when it was last checked.</p><p>Map data © OpenStreetMap contributors. Prototype data is illustrative and not verified.</p></div></div></footer>`;
+    <div class="small"><p><b>RestStop UK</b> · About · Suggest a correction · Privacy</p><p>Always follow road signs. Facilities and opening hours can change; each page shows when it was last checked.</p><p>Map data © OpenStreetMap contributors. Geographic and facility information may change; verify important details before travel.</p></div></div></footer>`;
 }
 
 /* ================= FILTER SHEET ================= */

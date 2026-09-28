@@ -1,0 +1,11 @@
+RestStop UK - Phase 8H static SEO build
+
+Base URL: https://reststopuk.co.uk
+Stops: 3934
+Road pages: 653
+Region pages: 9
+County pages: 117
+Sitemap URLs: 4717
+
+Output:
+C:\Users\Ricardo\Documents\RestStop UK\site

@@ -61,7 +61,7 @@ p{margin:0}
 .ic{flex:none;display:block}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
-/* ---------- prototype chrome (not part of product) ---------- */
+/* ---------- interface chrome (not part of product) ---------- */
 .proto{display:none!important}
 .proto b{color:#fff;letter-spacing:.02em}
 .proto .grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -400,9 +400,9 @@ p{margin:0}
 .demo-box{background:var(--paper);border:1px dashed var(--line-2);border-radius:14px;padding:12px;display:grid;gap:10px}
 .tree{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;line-height:1.7;white-space:pre;color:var(--ink-2)}
 </style>
-<div class="proto" role="region" aria-label="Prototype controls">
-  <b>RestStop UK · concept prototype · V2</b>
-  <div class="grp"><button id="pv-app" data-pv="home" aria-pressed="true">Prototype</button><button id="pv-sys" data-pv="system" aria-pressed="false">Design system</button></div>
+<div class="proto" role="region" aria-label="Interface controls">
+  <b>RestStop UK · concept interface · V2</b>
+  <div class="grp"><button id="pv-app" data-pv="home" aria-pressed="true">Interface</button><button id="pv-sys" data-pv="system" aria-pressed="false">Design system</button></div>
   <div class="grp"><label for="pj">Page</label><select id="pj">
     <option value="">—</option><option value="home">Home / near me</option><option value="road-m1">Road: M1</option><option value="road-a1">Road: A1</option><option value="road-a16">Road: A16</option>
     <option value="region-lincolnshire">Region: Lincolnshire</option><option value="region-yorkshire">Region: Yorkshire</option><option value="town-boston">Town: Boston</option>
@@ -497,7 +497,7 @@ const FACILITIES = [
 ];
 const FILTER_FACS = ['toilets','fuel','food','hgv_parking','ev_charging','showers','motorhome_parking','overnight_parking'];
 
-/* rough England outline (lat, lon) for the schematic prototype map */
+/* rough England outline (lat, lon) for the schematic interface map */
 const COAST = [[55.77,-2.0],[55.3,-1.55],[54.98,-1.42],[54.6,-1.15],[54.45,-0.55],[54.1,-0.2],[53.62,0.12],[53.45,0.27],[53.15,0.35],[52.95,0.33],[52.84,0.12],[52.8,0.28],[52.95,0.55],[52.97,1.0],[52.9,1.6],[52.5,1.75],[52.1,1.6],[51.8,1.2],[51.55,0.9],[51.47,0.55],[51.4,1.42],[51.1,1.3],[50.9,0.9],[50.75,0.25],[50.8,-0.6],[50.72,-1.3],[50.62,-2.0],[50.6,-2.5],[50.7,-3.4],[50.3,-3.8],[50.35,-4.3],[50.05,-5.1],[50.07,-5.7],[50.4,-5.05],[50.7,-4.6],[51.05,-4.25],[51.2,-3.5],[51.35,-2.95],[51.6,-2.65],[51.75,-2.6],[51.9,-2.9],[52.3,-3.05],[52.6,-3.1],[52.9,-2.95],[53.1,-2.9],[53.3,-3.05],[53.4,-3.1],[53.6,-3.05],[53.9,-3.05],[54.1,-3.2],[54.2,-3.4],[54.45,-3.6],[54.7,-3.45],[54.95,-3.2],[55.0,-3.0],[55.1,-2.7],[55.3,-2.3],[55.55,-2.25]];
 /* ================= ICONS (24px grid, 1.8 stroke) ================= */
 const T = (s,x=12,y=15.6,fs=8.5)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="${fs}" font-weight="900" fill="currentColor" stroke="none" font-family="Overpass,system-ui,sans-serif">${s}</text>`;
@@ -603,7 +603,7 @@ const S = { user:{...EXAMPLE}, radius:25, filters:{types:new Set(),facs:new Set(
 const frame = document.getElementById('frame'), app = document.getElementById('app');
 const scroller = () => frame.classList.contains('phone') ? app : window;
 
-/* ================= MAP (schematic SVG for prototype; MapLibre in production) ================= */
+/* ================= MAP (schematic SVG for interface; MapLibre in production) ================= */
 const P = (lat,lon) => [lon*60, -lat*100];
 const pathD = (pts,close) => pts.map((p,i)=>{const [x,y]=P(p[0],p[1]);return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);}).join('')+(close?'Z':'');
 const NS='http://www.w3.org/2000/svg';
@@ -612,7 +612,7 @@ class MapView{
     Object.assign(this,{host,items,user,road,single,onSelect,sel:S.selected,hl:null,vb:{cx:0,cy:0,w:100}});
     host.insertAdjacentHTML('afterbegin',`<div class="map"><svg aria-hidden="true"><path class="landp"/><g class="rds"></g><g class="ovl"></g></svg></div>
       <div class="map-ctrl"><button type="button" data-z="1" aria-label="Zoom in">+</button><button type="button" data-z="-1" aria-label="Zoom out">−</button><button type="button" data-z="0" aria-label="Show all results">${ic('locate',20)}</button></div>
-      <div class="map-attr">Schematic prototype map · production uses MapLibre + OpenStreetMap</div>
+      <div class="map-attr">Schematic interface map · production uses MapLibre + OpenStreetMap</div>
       ${single?'':`<div class="map-legend"><span><i class="lg-dot">S</i>Services</span><span><i class="lg-dot">T</i>Truck / HGV</span><span><i class="lg-dot o">P</i>Lay-by</span></div>`}`);
     this.el=host.querySelector('.map'); this.svg=this.el.querySelector('svg');
     this.svg.querySelector('.landp').setAttribute('d',pathD(COAST,true));
@@ -972,8 +972,8 @@ function docPage(){
   ];
   return `<div class="wrap doc">
   <header><span class="type">Concept · v0.1 · September 2026</span><h1>RestStop UK design system</h1>
-    <p>A UK directory with one job: help a driver find the next suitable place to stop. Every decision below favours the faster, simpler option. This page documents the concept; the rest of the prototype is the working interface.</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><a class="btn go" href="#home">Open the prototype</a><a class="btn" href="#loc-grantham-north-services-a1">Example location page</a><a class="btn" href="#road-m1">Example road page</a></div></header>
+    <p>A UK directory with one job: help a driver find the next suitable place to stop. Every decision below favours the faster, simpler option. This page documents the concept; the rest of the interface is the working interface.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><a class="btn go" href="#home">Open the interface</a><a class="btn" href="#loc-grantham-north-services-a1">Example location page</a><a class="btn" href="#road-m1">Example road page</a></div></header>
 
   ${sec(1,'visual','Visual direction',`
     <p>Borrow the grammar of British road signs without copying government branding: route numbers in blue (motorways) and yellow-on-green (primary A roads), a highway-derived display face for numbers, and a calm off-white ground. Colour is reserved for information, never decoration. Green is the single action colour, because the primary action is always <em>go</em>.</p>
@@ -1061,7 +1061,7 @@ function docPage(){
     <tr><td><code>direction</code> null</td><td>“Direction not confirmed”</td><td>Same</td><td>Excluded from one-direction filters</td></tr></tbody></table></div>
     <p>We never infer. A motorway service area without a confirmed showers value does not show showers, even though most have them.</p>`)}
 
-  ${sec('B','seo','SEO and rendering',`<ul><li><b>Prototype routing note:</b> this single-file demo uses hash routes so it can run locally. Production must use real indexable paths such as <code>/rest-areas/m1/</code>, <code>/rest-areas/lincolnshire/</code>, <code>/rest-areas/boston/</code> and <code>/locations/grantham-north-services-a1/</code>.</li><li>Next.js App Router with static generation for every road, region, town, type and location page (<code>generateStaticParams</code>) and ISR revalidation daily. Content is in the HTML; the map and geolocation are client-side enhancements.</li><li>Location pages emit schema.org JSON-LD (<code>Place</code>, <code>GasStation</code> or <code>ParkingFacility</code> by type) with <code>geo</code>, <code>address</code>, <code>openingHours</code>, <code>amenityFeature</code>, plus <code>BreadcrumbList</code>. Road and region pages emit <code>ItemList</code>.</li><li>Unique title and description templates, e.g. “M1 Services &amp; Rest Areas — Northbound and Southbound | RestStop UK”. Canonical URLs, trailing slash, XML sitemap split by template.</li><li>Direction, near-me and filters are URL parameters, <code>noindex</code> for filtered variants, canonical to the base page.</li><li>Thin pages (towns with fewer than 3 stops) are not generated.</li></ul>`)}
+  ${sec('B','seo','SEO and rendering',`<ul><li><b>Interface routing note:</b> this single-file demo uses hash routes so it can run locally. Production must use real indexable paths such as <code>/rest-areas/m1/</code>, <code>/rest-areas/lincolnshire/</code>, <code>/rest-areas/boston/</code> and <code>/locations/grantham-north-services-a1/</code>.</li><li>Next.js App Router with static generation for every road, region, town, type and location page (<code>generateStaticParams</code>) and ISR revalidation daily. Content is in the HTML; the map and geolocation are client-side enhancements.</li><li>Location pages emit schema.org JSON-LD (<code>Place</code>, <code>GasStation</code> or <code>ParkingFacility</code> by type) with <code>geo</code>, <code>address</code>, <code>openingHours</code>, <code>amenityFeature</code>, plus <code>BreadcrumbList</code>. Road and region pages emit <code>ItemList</code>.</li><li>Unique title and description templates, e.g. “M1 Services &amp; Rest Areas — Northbound and Southbound | RestStop UK”. Canonical URLs, trailing slash, XML sitemap split by template.</li><li>Direction, near-me and filters are URL parameters, <code>noindex</code> for filtered variants, canonical to the base page.</li><li>Thin pages (towns with fewer than 3 stops) are not generated.</li></ul>`)}
 
   ${sec('C','perf','Performance budget',`<div class="tbl"><table><thead><tr><th>Metric</th><th>Budget</th><th>How</th></tr></thead><tbody>
     <tr><td>JS on location page before map</td><td>&lt; 60 KB gz</td><td>Server components; only search, filters and map are client islands</td></tr>
@@ -1210,7 +1210,7 @@ app.addEventListener('click',e=>{
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&S.sheet){ S.sheet=false; renderSheet(); } });
 window.addEventListener('hashchange',()=>{ S.selected=null; S.menu=false; S.dir='all'; S.roadf='all'; S.view='list'; S.sheet=false; render(false); if(scroller()===window && !S.scrollResults && !S.focusSearch) window.scrollTo(0,0); });
 
-/* ================= PROTOTYPE CONTROLS ================= */
+/* ================= INTERFACE CONTROLS ================= */
 S.demo='normal';
 function syncProto(){
   document.getElementById('pv-app').setAttribute('aria-pressed',S.route!=='system');
@@ -1366,7 +1366,7 @@ document.addEventListener('reststop:data-error', e => {
 
 <script id="phase8c-real-results-bridge">
 /* =========================================================
-   Phase 8C — connect the existing prototype UI to real data.
+   Phase 8C — connect the existing interface UI to real data.
    ========================================================= */
 (function(){
   const STATIC_ROAD_KEYS = {
@@ -1498,7 +1498,7 @@ document.addEventListener('reststop:data-error', e => {
         if(g.roads.length>=8) break;
       }
 
-      // Keep the prototype's known place/postcode helpers for the current MVP.
+      // Keep the interface's known place/postcode helpers for the current MVP.
       const pc=U.match(/^([A-Z]{1,2}\d[A-Z\d]?)(\d[A-Z]{2})?$/);
       if(pc && OUTWARD[pc[1]]) {
         const k=OUTWARD[pc[1]];
@@ -1579,7 +1579,7 @@ document.addEventListener('reststop:data-error', e => {
     };
 
     document.documentElement.dataset.realData='ready';
-    console.info('[RestStop UK Phase 8C] Prototype switched to real records:', LOCATIONS.length);
+    console.info('[RestStop UK Phase 8C] Interface switched to real records:', LOCATIONS.length);
     render(false);
   }
 
@@ -1892,7 +1892,7 @@ console.info('[RestStop UK v2.5.8] Road searches now render on the home results 
       const regionSlug=addGeo(GEO_INDEX.regions,l.region,l);
       const countySlug=addGeo(GEO_INDEX.counties,l.county||l.district,l);
 
-      // Preserve the old prototype contract while using real geographic membership.
+      // Preserve the old interface contract while using real geographic membership.
       l.regions=[];
       if(regionSlug) l.regions.push(regionSlug);
       if(countySlug) l.regions.push(`county-${countySlug}`);

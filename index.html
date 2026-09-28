@@ -8,8 +8,12 @@
 <meta property="og:description" content="Find motorway services, rest areas, truck stops and lay-bys across the UK.">
 <meta property="og:url" content="https://reststopuk.co.uk/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="RestStop UK">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#0a6b3d">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>RestStop UK | Find Rest Areas, Services & Lay-bys</title>
 </head><body>
-<title>RestStop UK v2.6.2 Geo Detail Fixed — RestStop UK</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700;800&family=Overpass:wght@600;700;800;900&display=swap">
@@ -838,8 +842,10 @@ function regionPage(s){
   const items=LOCATIONS.filter(l=>l.regions.includes(s));
   const towns=(r.towns||[]).filter(t=>PLACES[t]);
   const parent = r.parent ? [`<a href="#region-${r.parent}">${REGIONS[r.parent].name}</a>`] : [`<a href="#regions">Regions</a>`];
+  const townBlock=towns.length?`<section class="browse" style="border:0;padding-top:8px"><div><h2>Towns in ${r.name}</h2><div class="linkgrid">${towns.map(t=>`<a href="#town-${t}">Near ${PLACES[t][0]}</a>`).join('')}</div></div></section>`:'';
+  const stayBlock=s==='lincolnshire'?`<section class="panel" style="margin:8px 0 28px"><h2>Staying in Lincolnshire?</h2><p class="hint">Planning an overnight stop or a longer break? Explore campsites, cabins and local staycation ideas with <a class="link" href="https://lincs-staycation-guide.co.uk/" target="_blank" rel="noopener">Lincs Staycation Guide</a>.</p></section>`:'';
   return listingPage({crumb:[...parent,`<span aria-current="page">${r.name}</span>`],title:`Rest Areas in ${r.name}`,intro:r.desc,items,
-    after:towns.length?`<section class="browse" style="border:0;padding-top:8px"><div><h2>Towns in ${r.name}</h2><div class="linkgrid">${towns.map(t=>`<a href="#town-${t}">Near ${PLACES[t][0]}</a>`).join('')}</div></div></section>`:''});
+    after:townBlock+stayBlock});
 }
 function townPage(t){
   const p=PLACES[t]; if(!p) return notFound();
@@ -907,7 +913,7 @@ function locPage(slug){
     <div class="sticky-cta" data-sticky-directions hidden>${d!=null?distHTML(d):''}<a class="btn go" href="${gmaps(l)}" target="_blank" rel="noopener">${ic('nav',22)}Get directions</a></div>`;
 }
 function indexPage(k){
-  if(k==='regions') return `<div class="wrap">${crumbs(['<span aria-current="page">Regions</span>'])}<header class="phd"><h1>Rest areas by region</h1><p>England first. Scotland, Wales and Northern Ireland will follow.</p></header><div class="linkgrid" style="padding-bottom:30px">${Object.entries(REGIONS).map(([s,r])=>`<a href="#region-${s}">${r.name}<small>${r.kind} · ${LOCATIONS.filter(l=>l.regions.includes(s)).length}</small></a>`).join('')}</div></div>`;
+  if(k==='regions') return `<div class="wrap">${crumbs(['<span aria-current="page">Regions</span>'])}<header class="phd"><h1>Rest areas by region</h1><p>Browse rest areas across England, Scotland, Wales and Northern Ireland.</p></header><div class="linkgrid" style="padding-bottom:30px">${Object.entries(REGIONS).map(([s,r])=>`<a href="#region-${s}">${r.name}<small>${r.kind} · ${LOCATIONS.filter(l=>l.regions.includes(s)).length}</small></a>`).join('')}</div></div>`;
   const kind=k==='motorways'?'m':'a';
   return `<div class="wrap">${crumbs([`<span aria-current="page">${kind==='m'?'Motorways':'A roads'}</span>`])}<header class="phd"><h1>${kind==='m'?'Motorway services':'A-road rest areas'} by road</h1><p>Choose a road to see every stop in the order you reach it.</p></header>
     <div class="roadgrid" style="padding-bottom:30px">${Object.entries(ROADS).filter(([,r])=>r.kind===kind).map(([s,r])=>`<a href="#road-${s}"><span class="road ${r.kind}">${r.label}</span>${r.from} – ${r.to} · ${LOCATIONS.filter(l=>l.roads.includes(s)).length} stops</a>`).join('')}</div></div>`;
@@ -918,7 +924,8 @@ function footer(){
     <div><h3>Motorways</h3><ul>${['m1','m6','m62'].map(s=>`<li><a href="#road-${s}">${ROADS[s].label} services</a></li>`).join('')}</ul></div>
     <div><h3>A roads</h3><ul>${['a1','a14','a16','a17'].map(s=>`<li><a href="#road-${s}">${ROADS[s].label} rest areas</a></li>`).join('')}</ul></div>
     <div><h3>Regions</h3><ul>${['lincolnshire','east-midlands','yorkshire','east-of-england'].map(s=>`<li><a href="#region-${s}">${REGIONS[s].name}</a></li>`).join('')}</ul></div>
-    <div><h3>Stop types</h3><ul>${TYPE_PAGES.map(([s,t])=>`<li><a href="#type-${s}">${t}</a></li>`).join('')}</ul></div></div>
+    <div><h3>Stop types</h3><ul>${TYPE_PAGES.map(([s,t])=>`<li><a href="#type-${s}">${t}</a></li>`).join('')}</ul></div>
+    <div><h3>Travel &amp; stays</h3><ul><li><a href="https://lincs-staycation-guide.co.uk/" target="_blank" rel="noopener">Lincolnshire staycations</a></li></ul></div></div>
     <div class="small"><p><b>RestStop UK</b> · About · Suggest a correction · Privacy</p><p>Always follow road signs. Facilities and opening hours can change; each page shows when it was last checked.</p><p>Map data © OpenStreetMap contributors. Geographic and facility information may change; verify important details before travel.</p></div></div></footer>`;
 }
 

@@ -13,6 +13,36 @@
 <meta name="theme-color" content="#0a6b3d">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <title>RestStop UK | Find Rest Areas, Services & Lay-bys</title>
+
+<!-- RestStop UK Phase 10A — GA4 consent-aware product analytics -->
+<script>
+window.RSUK_ANALYTICS_ID='G-QKVW0EETP0';
+window.RSUK_ANALYTICS_CONSENT_KEY='rsuk_analytics_consent';
+window.rsukTrack=function(){};
+(function(){
+  const KEY=window.RSUK_ANALYTICS_CONSENT_KEY;
+  function loadGA(){
+    if(window.__rsukGaLoaded) return;
+    window.__rsukGaLoaded=true;
+    window.dataLayer=window.dataLayer||[];
+    window.gtag=function(){dataLayer.push(arguments);}
+    const s=document.createElement('script');
+    s.async=true;
+    s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(window.RSUK_ANALYTICS_ID);
+    document.head.appendChild(s);
+    gtag('js',new Date());
+    gtag('config',window.RSUK_ANALYTICS_ID,{send_page_view:true});
+    window.rsukTrack=function(name,params){
+      try{gtag('event',name,params||{});}catch(_e){}
+    };
+    document.dispatchEvent(new CustomEvent('rsuk:analytics-ready'));
+  }
+  function getConsent(){try{return localStorage.getItem(KEY);}catch(_e){return null;}}
+  function setConsent(v){try{localStorage.setItem(KEY,v);}catch(_e){} if(v==='granted') loadGA();}
+  window.rsukSetAnalyticsConsent=setConsent;
+  if(getConsent()==='granted') loadGA();
+})();
+</script>
 </head><body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2575,6 +2605,74 @@ console.info('[RestStop UK v2.5.8] Road searches now render on the home results 
   },true);
 
   console.info('[RestStop UK Phase 9A.19] UK-wide search rebuild enabled.');
+})();
+</script>
+
+<script id="phase10a-ga4-product-analytics">
+(function(){
+  function track(name,params){ if(typeof window.rsukTrack==='function') window.rsukTrack(name,params||{}); }
+  function cleanText(el){ return (el?.textContent||'').replace(/\s+/g,' ').trim().slice(0,120); }
+  function stopContext(el){
+    const card=el?.closest?.('.card');
+    const slug=card?.dataset?.slug || '';
+    const title=card?.querySelector?.('h3')?.textContent?.trim() || '';
+    return {stop_id:slug||undefined,stop_name:title||undefined,source_page:location.pathname+location.hash};
+  }
+
+  document.addEventListener('submit',function(e){
+    const form=e.target.closest?.('form[data-search]');
+    if(!form) return;
+    const q=form.querySelector('input')?.value?.trim();
+    if(q) track('search',{search_term:q,source_page:location.pathname+location.hash});
+  },true);
+
+  document.addEventListener('click',function(e){
+    const el=e.target.closest?.('a,button');
+    if(!el) return;
+
+    const action=el.dataset?.action;
+    if(action==='locate'){
+      track('use_location',{source_page:location.pathname+location.hash});
+      return;
+    }
+    if(action==='fac' || action==='type' || action==='radius' || action==='dir' || action==='roadf' || action==='clear'){
+      track('filter_apply',{
+        filter_type:action,
+        filter_value:el.dataset?.k || el.dataset?.r || el.dataset?.d || el.dataset?.v || cleanText(el),
+        source_page:location.pathname+location.hash
+      });
+      return;
+    }
+
+    const href=el.getAttribute?.('href')||'';
+    const text=cleanText(el).toLowerCase();
+    if(/google\.[^/]+\/maps|maps\.google|google\.com\/maps/.test(href) || text.includes('directions')){
+      track('directions_click',stopContext(el));
+      return;
+    }
+    if(href.startsWith('#loc-') || text==='view details'){
+      track('view_details',Object.assign(stopContext(el),{target:href||undefined}));
+    }
+  },true);
+
+  function renderConsent(){
+    let saved=null; try{saved=localStorage.getItem(window.RSUK_ANALYTICS_CONSENT_KEY);}catch(_e){}
+    if(saved) return;
+    const bar=document.createElement('div');
+    bar.id='rsuk-analytics-consent';
+    bar.setAttribute('role','dialog');
+    bar.setAttribute('aria-label','Analytics preferences');
+    bar.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;max-width:760px;margin:auto;background:var(--surface,#fff);color:var(--ink,#111);border:1px solid var(--line,#d3d9d4);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:14px 16px;font:14px/1.45 system-ui,sans-serif';
+    bar.innerHTML='<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:240px"><strong style="display:block;margin-bottom:3px">Help us improve RestStop UK</strong><span>We use Google Analytics only if you accept, to understand searches, filters and navigation. You can reject analytics and keep using the site normally.</span></div><div style="display:flex;gap:8px"><button type="button" data-rsuk-consent="denied" class="btn sm">Reject</button><button type="button" data-rsuk-consent="granted" class="btn go sm">Accept analytics</button></div></div>';
+    document.body.appendChild(bar);
+    bar.addEventListener('click',function(e){
+      const b=e.target.closest('[data-rsuk-consent]');
+      if(!b) return;
+      window.rsukSetAnalyticsConsent?.(b.dataset.rsukConsent);
+      bar.remove();
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',renderConsent,{once:true}); else renderConsent();
 })();
 </script>
 </body></html>

@@ -612,12 +612,12 @@ function matchFilters(l){
 
   if(f.types.size && !f.types.has(TYPES[l.location_type].group)) return false;
 
-  // Strict AND semantics: every selected facility must be explicitly confirmed YES.
-  // Prefer the original production tri-state facility object when available.
+  // Strict AND semantics: every selected facility must be explicitly confirmed.
+  // Production data can contain tri-state strings or booleans, so normalize both.
   for(const k of f.facs){
     const tri = l._facilities ? l._facilities[k] : undefined;
     if(tri !== undefined){
-      if(tri !== 'yes') return false;
+      if(!yes(tri)) return false;
     }else{
       if(!yes(l[k])) return false;
     }
@@ -1313,15 +1313,16 @@ render(false);
   function applyFilters(stops, filters={}) {
     return stops.filter(s => {
       const f = s.facilities || {};
-      if (filters.toilets && f.toilets !== 'yes') return false;
-      if (filters.fuel && f.fuel !== 'yes') return false;
-      if (filters.hgv && f.hgvParking !== 'yes') return false;
-      if (filters.ev && f.evCharging !== 'yes') return false;
-      if (filters.food && f.food !== 'yes') return false;
-      if (filters.coffee && f.coffee !== 'yes') return false;
-      if (filters.shop && f.shop !== 'yes') return false;
-      if (filters.showers && f.showers !== 'yes') return false;
-      if (filters.hotel && f.hotel !== 'yes') return false;
+      const has = v => v === true || v === 'yes' || v === 'paid';
+      if (filters.toilets && !has(f.toilets)) return false;
+      if (filters.fuel && !has(f.fuel)) return false;
+      if (filters.hgv && !has(f.hgvParking ?? f.hgv_parking)) return false;
+      if (filters.ev && !has(f.evCharging ?? f.ev_charging)) return false;
+      if (filters.food && !has(f.food)) return false;
+      if (filters.coffee && !has(f.coffee)) return false;
+      if (filters.shop && !has(f.shop)) return false;
+      if (filters.showers && !has(f.showers)) return false;
+      if (filters.hotel && !has(f.hotel)) return false;
       return true;
     });
   }
@@ -1405,7 +1406,8 @@ document.addEventListener('reststop:data-error', e => {
   };
   const REAL_ROAD_BY_KEY = Object.create(null);
 
-  const val = v => v === 'yes' ? true : v === 'no' ? false : null;
+  const val = v => (v === true || v === 'yes' || v === 'paid') ? true : (v === false || v === 'no') ? false : null;
+  const tri = v => (v === true || v === 'yes' || v === 'paid') ? 'yes' : (v === false || v === 'no') ? 'no' : 'unknown';
   const roadKey = label => 'real-' + String(label||'road').toLowerCase()
     .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 
@@ -1434,10 +1436,12 @@ document.addEventListener('reststop:data-error', e => {
       food:val(f.food),
       coffee:val(f.coffee),
       shop:val(f.shop),
-      ev_charging:val(f.evCharging),
+      ev_charging:val(f.evCharging ?? f.ev_charging),
       showers:val(f.showers),
       hotel:val(f.hotel),
-      hgv_parking:val(f.hgvParking),
+      hgv_parking:val(f.hgvParking ?? f.hgv_parking),
+      motorhome_parking:val(f.motorhomeParking ?? f.motorhome_parking ?? s.motorhomeParking ?? s.motorhome_parking),
+      overnight_parking:val(f.overnightParking ?? f.overnight_parking ?? s.overnightParking ?? s.overnight_parking),
       car_parking:true,
       road_confidence:s.roadConfidence || null,
       direction_confidence:s.directionConfidence || null,
@@ -1452,17 +1456,19 @@ document.addEventListener('reststop:data-error', e => {
       outward_code:s.outwardCode || null,
       geo_source:s.geoSource || null,
       _facilities:{
-        toilets:f.toilets || 'unknown',
-        fuel:f.fuel || 'unknown',
-        food:f.food || 'unknown',
-        coffee:f.coffee || 'unknown',
-        shop:f.shop || 'unknown',
-        ev_charging:f.evCharging || 'unknown',
-        showers:f.showers || 'unknown',
-        hotel:f.hotel || 'unknown',
-        drinking_water:f.drinkingWater || 'unknown',
-        sanitary_dump:f.sanitaryDump || 'unknown',
-        hgv_parking:f.hgvParking || 'unknown'
+        toilets:tri(f.toilets),
+        fuel:tri(f.fuel),
+        food:tri(f.food),
+        coffee:tri(f.coffee),
+        shop:tri(f.shop),
+        ev_charging:tri(f.evCharging ?? f.ev_charging),
+        showers:tri(f.showers),
+        hotel:tri(f.hotel),
+        drinking_water:tri(f.drinkingWater ?? f.drinking_water),
+        sanitary_dump:tri(f.sanitaryDump ?? f.sanitary_dump),
+        hgv_parking:tri(f.hgvParking ?? f.hgv_parking),
+        motorhome_parking:tri(f.motorhomeParking ?? f.motorhome_parking ?? s.motorhomeParking ?? s.motorhome_parking),
+        overnight_parking:tri(f.overnightParking ?? f.overnight_parking ?? s.overnightParking ?? s.overnight_parking)
       }
     });
   }

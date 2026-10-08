@@ -1,0 +1,44 @@
+name: Enrich England facilities
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/enrich_england_facilities.py"
+      - ".github/workflows/enrich-england-facilities.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  enrich:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependency
+        run: python -m pip install --disable-pip-version-check requests
+
+      - name: Enrich England facilities
+        run: python scripts/enrich_england_facilities.py
+
+      - name: Commit enriched data
+        run: |
+          if git diff --quiet -- data/frontend/reststops-uk.min.json data/frontend/reststops-uk.json data/frontend/england-facilities-report.json; then
+            echo "No data changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/frontend/reststops-uk.min.json data/frontend/reststops-uk.json data/frontend/england-facilities-report.json
+          git commit -m "Enrich England facilities from OpenStreetMap [skip ci]"
+          git push

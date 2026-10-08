@@ -724,6 +724,28 @@ const skeleton = n => Array.from({length:n},()=>`<div class="skcard" aria-hidden
 function stateBox({icon='info',warn=false,title,body,actions=''}){ return `<div class="state${warn?' warn':''}" role="status"><div class="si">${ic(icon,24)}</div><h3>${title}</h3><p>${body}</p>${actions}</div>`; }
 const STEPS=[10,25,50,100];
 function filterCount(){ return S.filters.types.size+S.filters.facs.size; }
+
+function facilityAvailability(){
+  let pool=LOCATIONS;
+  if(S.route==='home' && S.user){
+    pool=LOCATIONS.filter(l=>distFrom(l,S.user)<=S.radius);
+  }else if(S.route==='road'){
+    const r=route().slice(5);
+    if(ROADS[r]) pool=LOCATIONS.filter(l=>l.roads.includes(r));
+  }
+  if(S.filters.types.size){
+    pool=pool.filter(l=>S.filters.types.has(TYPES[l.location_type]?.group));
+  }
+  const out={};
+  for(const k of FILTER_FACS){
+    out[k]=pool.reduce((n,l)=>{
+      const tri=l._facilities ? l._facilities[k] : undefined;
+      return n + ((tri!==undefined ? yes(tri) : yes(l[k])) ? 1 : 0);
+    },0);
+  }
+  return out;
+}
+
 function quickChips(){
   const q=[['toilets','Toilets'],['fuel','Fuel'],['hgv_parking','HGV'],['ev_charging','EV']];
   return `<div class="quick">${q.map(([k,t])=>`<button class="chip" data-action="fac" data-k="${k}" aria-pressed="${S.filters.facs.has(k)}">${t}</button>`).join('')}
@@ -961,11 +983,12 @@ function footer(){
 
 /* ================= FILTER SHEET ================= */
 function sheetHTML(){
-  const f=S.filters, n=S.count?S.count():null, isHome=S.route==='home';
+  const f=S.filters, n=S.count?S.count():null, isHome=S.route==='home', avail=facilityAvailability();
+  const availableCount=FILTER_FACS.filter(k=>avail[k]>0).length;
   return `<div class="scrim" data-action="sheet-close-bg"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><div class="grab"></div>
     <header><h2 id="sh-t">Filters</h2><button class="icon-btn" data-action="sheet-close" aria-label="Close filters">${ic('close',22)}</button></header>
     <fieldset><legend>Type of stop</legend><div class="chips">${TYPE_GROUPS.map(([k,t])=>`<button class="chip" data-action="type" data-k="${k}" aria-pressed="${f.types.has(k)}">${t}</button>`).join('')}</div></fieldset>
-    <fieldset><legend>Must have</legend><div class="chips">${FILTER_FACS.map(k=>{const x=FACILITIES.find(y=>y[0]===k);return `<button class="chip" data-action="fac" data-k="${k}" aria-pressed="${f.facs.has(k)}">${ic(x[2],18)}${x[1]}</button>`;}).join('')}</div></fieldset>
+    <fieldset><legend>Must have</legend><div class="chips">${FILTER_FACS.map(k=>{const x=FACILITIES.find(y=>y[0]===k);const disabled=avail[k]===0&&!f.facs.has(k);return `<button class="chip" data-action="fac" data-k="${k}" aria-pressed="${f.facs.has(k)}" ${disabled?'disabled aria-disabled="true" style="opacity:.45;cursor:not-allowed"':''} title="${avail[k]} confirmed in the current area">${ic(x[2],18)}${x[1]}${avail[k]>0?` <span class="count">${avail[k]}</span>`:''}</button>`;}).join('')}</div>${availableCount===0?'<p class="hint" style="margin-top:10px">Facility details have not yet been confirmed for stops in this area. Type and distance filters are still available.</p>':''}</fieldset>
     ${isHome?`<fieldset><legend>Distance</legend><div class="seg" role="group">${STEPS.map(r=>`<button data-action="radius" data-r="${r}" aria-pressed="${S.radius===r}">${r} mi</button>`).join('')}</div></fieldset>`:''}
     <footer><button class="btn" data-action="clear">Clear</button><button class="btn go" data-action="sheet-close">${n!=null?`Show ${n} stop${n===1?'':'s'}`:'Show results'}</button></footer></div></div>`;
 }
@@ -1218,6 +1241,7 @@ app.addEventListener('click',e=>{
   const sa=e.target.closest('.sugg a'); if(sa){ e.preventDefault(); pickLink(sa); return; }
   const q=e.target.closest('[data-q]'); if(q){ const inp=app.querySelector('.search input'); inp.value=q.dataset.q; showSugg(inp.form); inp.focus(); return; }
   const a=e.target.closest('[data-action]'); if(!a) return;
+  if(a.disabled || a.getAttribute('aria-disabled')==='true') return;
   switch(a.dataset.action){
     case 'locate': locate(); break;
     case 'search-focus': S.menu=false; focusSearch(); break;

@@ -109,7 +109,7 @@ p{margin:0}
 .stack{display:flex;flex-direction:column}
 
 /* ---------- header ---------- */
-.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.hdr{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--line)}
 .hdr > .wrap{height:var(--hdr);display:flex;align-items:center;gap:12px}
 .brand{display:flex;align-items:center;gap:9px;text-decoration:none;font-family:var(--display);font-weight:900;font-size:21px;letter-spacing:-.01em;margin-right:auto}
 .brand .uk{font-size:11px;font-weight:800;letter-spacing:.08em;background:var(--ink);color:var(--paper);border-radius:5px;padding:2px 5px 1px;transform:translateY(-1px)}
@@ -1406,8 +1406,32 @@ document.addEventListener('reststop:data-error', e => {
   };
   const REAL_ROAD_BY_KEY = Object.create(null);
 
-  const val = v => (v === true || v === 'yes' || v === 'paid') ? true : (v === false || v === 'no') ? false : null;
-  const tri = v => (v === true || v === 'yes' || v === 'paid') ? 'yes' : (v === false || v === 'no') ? 'no' : 'unknown';
+  const val = v => (v === true || v === 1 || v === '1' || v === 'yes' || v === 'true' || v === 'paid' || v === 'designated' || v === 'customers') ? true : (v === false || v === 0 || v === '0' || v === 'no' || v === 'false') ? false : null;
+  const tri = v => val(v) === true ? 'yes' : val(v) === false ? 'no' : 'unknown';
+
+  function facilityRaw(s, aliases){
+    const sources=[s?.facilities,s?.amenities,s?.tags,s];
+    for(const src of sources){
+      if(!src || typeof src!=='object') continue;
+      for(const key of aliases){
+        if(Object.prototype.hasOwnProperty.call(src,key) && src[key] !== null && src[key] !== undefined && src[key] !== ''){
+          return src[key];
+        }
+      }
+    }
+    const flags=Array.isArray(s?.categoryFlags) ? s.categoryFlags : Array.isArray(s?.category_flags) ? s.category_flags : [];
+    const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+    const wanted=new Set(aliases.map(norm));
+    if(flags.some(x=>wanted.has(norm(x)))) return true;
+    return undefined;
+  }
+
+  function facilityTri(s, aliases){
+    return tri(facilityRaw(s,aliases));
+  }
+  function facilityBool(s, aliases){
+    return val(facilityRaw(s,aliases));
+  }
   const roadKey = label => 'real-' + String(label||'road').toLowerCase()
     .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 
@@ -1431,17 +1455,17 @@ document.addEventListener('reststop:data-error', e => {
       source:'OpenStreetMap',
       last_verified:'2026-09',
       regions:[],
-      toilets:val(f.toilets),
-      fuel:val(f.fuel),
-      food:val(f.food),
-      coffee:val(f.coffee),
-      shop:val(f.shop),
-      ev_charging:val(f.evCharging ?? f.ev_charging),
-      showers:val(f.showers),
-      hotel:val(f.hotel),
-      hgv_parking:val(f.hgvParking ?? f.hgv_parking),
-      motorhome_parking:val(f.motorhomeParking ?? f.motorhome_parking ?? s.motorhomeParking ?? s.motorhome_parking),
-      overnight_parking:val(f.overnightParking ?? f.overnight_parking ?? s.overnightParking ?? s.overnight_parking),
+      toilets:facilityBool(s,['toilets','toilet','wc']),
+      fuel:facilityBool(s,['fuel','petrol','fuel_station']),
+      food:facilityBool(s,['food','restaurant','fast_food','cafe']),
+      coffee:facilityBool(s,['coffee','cafe']),
+      shop:facilityBool(s,['shop','convenience']),
+      ev_charging:facilityBool(s,['evCharging','ev_charging','charging_station','charging']),
+      showers:facilityBool(s,['showers','shower']),
+      hotel:facilityBool(s,['hotel','accommodation']),
+      hgv_parking:facilityBool(s,['hgvParking','hgv_parking','truck_parking','hgv']),
+      motorhome_parking:facilityBool(s,['motorhomeParking','motorhome_parking','motorhome','caravan']),
+      overnight_parking:facilityBool(s,['overnightParking','overnight_parking','overnight']),
       car_parking:true,
       road_confidence:s.roadConfidence || null,
       direction_confidence:s.directionConfidence || null,
@@ -1456,19 +1480,19 @@ document.addEventListener('reststop:data-error', e => {
       outward_code:s.outwardCode || null,
       geo_source:s.geoSource || null,
       _facilities:{
-        toilets:tri(f.toilets),
-        fuel:tri(f.fuel),
-        food:tri(f.food),
-        coffee:tri(f.coffee),
-        shop:tri(f.shop),
-        ev_charging:tri(f.evCharging ?? f.ev_charging),
-        showers:tri(f.showers),
-        hotel:tri(f.hotel),
-        drinking_water:tri(f.drinkingWater ?? f.drinking_water),
-        sanitary_dump:tri(f.sanitaryDump ?? f.sanitary_dump),
-        hgv_parking:tri(f.hgvParking ?? f.hgv_parking),
-        motorhome_parking:tri(f.motorhomeParking ?? f.motorhome_parking ?? s.motorhomeParking ?? s.motorhome_parking),
-        overnight_parking:tri(f.overnightParking ?? f.overnight_parking ?? s.overnightParking ?? s.overnight_parking)
+        toilets:facilityTri(s,['toilets','toilet','wc']),
+        fuel:facilityTri(s,['fuel','petrol','fuel_station']),
+        food:facilityTri(s,['food','restaurant','fast_food','cafe']),
+        coffee:facilityTri(s,['coffee','cafe']),
+        shop:facilityTri(s,['shop','convenience']),
+        ev_charging:facilityTri(s,['evCharging','ev_charging','charging_station','charging']),
+        showers:facilityTri(s,['showers','shower']),
+        hotel:facilityTri(s,['hotel','accommodation']),
+        drinking_water:facilityTri(s,['drinkingWater','drinking_water','water']),
+        sanitary_dump:facilityTri(s,['sanitaryDump','sanitary_dump','waste_disposal']),
+        hgv_parking:facilityTri(s,['hgvParking','hgv_parking','truck_parking','hgv']),
+        motorhome_parking:facilityTri(s,['motorhomeParking','motorhome_parking','motorhome','caravan']),
+        overnight_parking:facilityTri(s,['overnightParking','overnight_parking','overnight'])
       }
     });
   }

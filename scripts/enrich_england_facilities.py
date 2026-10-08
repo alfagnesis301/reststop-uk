@@ -36,8 +36,8 @@ ENDPOINTS = [
 ]
 USER_AGENT = "RestStopUK-facility-enrichment/1.0 (+https://reststopuk.co.uk/)"
 TIMEOUT = 120
-BATCH_SIZE = 30
-REQUEST_PAUSE = 0.45
+GRID_DEG = 0.5
+REQUEST_PAUSE = 0.30
 MAX_RETRIES = 5
 
 FIELDS = [
@@ -218,45 +218,67 @@ def direct_element_enrichment(stops: list[dict[str, Any]], source_counts: Counte
 
     for kind, items in grouped.items():
         ids = [oid for oid, _ in items]
-        for pos in range(0, len(ids), 350):
-            chunk = ids[pos:pos+350]
+        for pos in range(0, len(ids), 75):
+            chunk = ids[pos:pos+75]
             selector = f"{kind}(id:{','.join(map(str, chunk))});"
             q = f"[out:json][timeout:120];({selector});out tags center;"
-            data = post_overpass(q)
+            try:
+                data = post_overpass(q)
+            except RuntimeError:
+                source_counts["failed:direct_chunks"] += 1
+                continue
             for el in data.get("elements", []):
-                s = by_key.get((el.get("type"), int(el.get("id"))))
-                if s:
-                    set_from_direct_tags(s, el.get("tags", {}), source_counts)
+                st = by_key.get((el.get("type"), int(el.get("id"))))
+                if st:
+                    set_from_direct_tags(st, el.get("tags", {}), source_counts)
             time.sleep(REQUEST_PAUSE)
 
 def nearby_enrichment(stops: list[dict[str, Any]], source_counts: Counter) -> None:
-    for start in range(0, len(stops), BATCH_SIZE):
-        batch = stops[start:start+BATCH_SIZE]
-        clauses = []
-        for s in batch:
-            lat, lon = float(s["lat"]), float(s["lng"])
-            r = radius_m(s)
-            clauses.extend([
-                f'nwr(around:{r},{lat},{lon})["amenity"~"^(toilets|fuel|charging_station|restaurant|cafe|fast_food|food_court|shower|drinking_water)$"];',
-                f'nwr(around:{r},{lat},{lon})["shop"~"^(convenience|kiosk|supermarket)$"];',
-                f'nwr(around:{r},{lat},{lon})["hgv"];',
-                f'nwr(around:{r},{lat},{lon})["motorhome"];',
-                f'nwr(around:{r},{lat},{lon})["overnight"];',
-            ])
-        q = "[out:json][timeout:120];(" + "".join(clauses) + ");out center tags;"
-        data = post_overpass(q)
+    """
+    Query nearby facility POIs by geographic grid instead of issuing an
+    around() query for every stop. This dramatically reduces Overpass load
+    and avoids gateway timeouts on the public service.
+    """
+    cells: dict[tuple[int, int], list[dict[str, Any]]] = defaultdict(list)
+    for st in stops:
+        lat, lon = float(st["lat"]), float(st["lng"])
+        key = (math.floor(lat / GRID_DEG), math.floor(lon / GRID_DEG))
+        cells[key].append(st)
 
-        # Deduplicate objects returned by overlapping around() clauses.
+    margin = 0.006  # safely covers the largest 350m service-area radius
+    total = len(cells)
+    for idx, ((ilat, ilon), cell_stops) in enumerate(sorted(cells.items()), 1):
+        south = ilat * GRID_DEG - margin
+        west = ilon * GRID_DEG - margin
+        north = (ilat + 1) * GRID_DEG + margin
+        east = (ilon + 1) * GRID_DEG + margin
+        bbox = f"{south},{west},{north},{east}"
+
+        q = (
+            "[out:json][timeout:120];("
+            f'nwr["amenity"~"^(toilets|fuel|charging_station|restaurant|cafe|fast_food|food_court|shower|drinking_water)$"]({bbox});'
+            f'nwr["shop"~"^(convenience|kiosk|supermarket)$"]({bbox});'
+            f'nwr["hgv"]({bbox});'
+            f'nwr["hgv_parking"]({bbox});'
+            f'nwr["motorhome"]({bbox});'
+            f'nwr["motorhome_parking"]({bbox});'
+            f'nwr["overnight"]({bbox});'
+            f'nwr["overnight_parking"]({bbox});'
+            ");out center tags;"
+        )
+        try:
+            data = post_overpass(q)
+        except RuntimeError:
+            source_counts["failed:grid_cells"] += 1
+            print(f"[grid] cell {idx}/{total} failed; continuing", file=sys.stderr)
+            continue
+
         seen = set()
-        elements = []
         for el in data.get("elements", []):
             key = (el.get("type"), el.get("id"))
             if key in seen:
                 continue
             seen.add(key)
-            elements.append(el)
-
-        for el in elements:
             p = element_point(el)
             if not p:
                 continue
@@ -264,17 +286,16 @@ def nearby_enrichment(stops: list[dict[str, Any]], source_counts: Counter) -> No
             if not facs:
                 continue
             plat, plon = p
-            for s in batch:
-                r = radius_m(s)
-                d_miles = miles(float(s["lat"]), float(s["lng"]), plat, plon)
+            for st in cell_stops:
+                r = radius_m(st)
+                d_miles = miles(float(st["lat"]), float(st["lng"]), plat, plon)
                 if d_miles * 1609.344 <= r:
                     for field in facs:
-                        if s.get(field) is not True:
-                            s[field] = True
+                        if st.get(field) is not True:
+                            st[field] = True
                             source_counts[f"nearby:{field}"] += 1
 
-        done = min(start+BATCH_SIZE, len(stops))
-        print(f"[nearby] {done}/{len(stops)} England stops processed")
+        print(f"[grid] {idx}/{total} cells processed")
         time.sleep(REQUEST_PAUSE)
 
 def enrich(data: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:

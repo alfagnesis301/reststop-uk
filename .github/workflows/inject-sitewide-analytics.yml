@@ -1,0 +1,51 @@
+name: Inject sitewide analytics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "analytics.js"
+      - "scripts/inject_sitewide_analytics.py"
+      - ".github/workflows/inject-sitewide-analytics.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inject:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Inject analytics loader
+        run: python scripts/inject_sitewide_analytics.py
+
+      - name: Verify sample coverage
+        run: |
+          grep -q '<script src="/analytics.js" defer></script>' roads/a30/index.html
+          grep -q '<script src="/analytics.js" defer></script>' stops/popham-services-way-61629318/index.html
+          grep -q '<script src="/analytics.js" defer></script>' regions/south-east/index.html
+          grep -q '<script src="/analytics.js" defer></script>' counties/hampshire/index.html
+
+      - name: Commit static-page analytics injection
+        run: |
+          if git diff --quiet; then
+            echo "No static HTML changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add '*.html' '**/*.html'
+          git commit -m "Add consent-aware GA4 to static SEO pages [skip ci]"
+          git push

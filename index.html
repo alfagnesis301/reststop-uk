@@ -1556,6 +1556,9 @@ document.addEventListener('reststop:data-error', e => {
     const mapped = data.stops.map(mapRealStop);
 
     LOCATIONS.splice(0, LOCATIONS.length, ...mapped);
+    // Ensure direct links from the SEO road landing pages resolve immediately,
+    // without requiring the visitor to search for the road first.
+    for (const road of ['A303', 'A3', 'A46']) ensureRoad(road);
     for(const k of Object.keys(BY_SLUG)) delete BY_SLUG[k];
     Object.assign(BY_SLUG, Object.fromEntries(LOCATIONS.map(l=>[l.slug,l])));
 

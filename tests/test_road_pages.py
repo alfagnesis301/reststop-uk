@@ -51,7 +51,7 @@ class RoadPageTests(unittest.TestCase):
                 self.assertIn('aria-live="polite"', html)
                 self.assertIn("data-road-kind", html)
                 self.assertIn("card.hidden = !matches", html)
-                self.assertEqual(len(re.findall(r'<h1\\b', html)), 1)
+                self.assertEqual(len(re.findall(r'<h1\b', html)), 1)
 
 
 if __name__ == "__main__":

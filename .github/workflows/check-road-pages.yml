@@ -2,6 +2,7 @@ name: Validate priority road pages
 on:
   pull_request:
     paths:
+      - "index.html"
       - "roads/**"
       - "tests/test_road_pages.py"
       - ".github/workflows/check-road-pages.yml"

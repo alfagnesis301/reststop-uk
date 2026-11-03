@@ -43,7 +43,7 @@ section{margin:28px 0}footer{color:var(--muted);font-size:13px;border-top:1px so
 <body>
 <header style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap"><a class="brand" href="/">RestStop <b>UK</b></a><nav aria-label="Main navigation"><a href="/">Search &amp; map</a> · <a href="/roads/">Roads</a> · <a href="/regions/">Regions</a> · <a href="/counties/">Counties</a></nav></header>
 <main><div id="phase8i-app-cta" style="max-width:1120px;margin:0 auto 8px;padding:0 20px"><a class="btn" href="/">Search nearby stops on the interactive map</a></div>
-<div class="crumbs"><a href="/">Home</a> › <a href="/roads/">Roads</a> › A46</div><div class="hero"><h1>A46 Services, Rest Areas &amp; Lay-bys</h1><p>Find services and stopping places on the A46. This page lists 68 locations across the route, including northbound and southbound lay-bys around Nottinghamshire, Leicestershire and the South West.</p></div><div class="stats"><span><b>68</b> locations</span></div><section class="card" aria-labelledby="road-guide-a46"><h2 id="road-guide-a46">Services and stops on the A46</h2><p>Find services and stopping places on the A46. This page lists 68 locations across the route, including northbound and southbound lay-bys around Nottinghamshire, Leicestershire and the South West.</p><p><a class="btn" href="/#road-a46">Open the A46 on the interactive map</a></p></section><section class="road-tools" aria-labelledby="road-tools-title">
+<div class="crumbs"><a href="/">Home</a> › <a href="/roads/">Roads</a> › A46</div><div class="hero"><h1>A46 Services, Rest Areas &amp; Lay-bys</h1><p>Find services and stopping places on the A46. This page lists 68 locations across the route, including northbound and southbound lay-bys around Nottinghamshire, Leicestershire and the South West.</p></div><div class="stats"><span><b>68</b> locations</span></div><section class="card" aria-labelledby="road-guide-a46"><h2 id="road-guide-a46">Services and stops on the A46</h2><p>Find services and stopping places on the A46. This page lists 68 locations across the route, including northbound and southbound lay-bys around Nottinghamshire, Leicestershire and the South West.</p><p><a class="btn" href="/#road-a46">Open the A46 on the interactive map</a></p></section><section class="road-tools" aria-labelledby="road-tools-title" hidden>
 <h2 id="road-tools-title">Find a stop on the A46</h2>
 <p>Filter the 68 listed locations by type. Open a stop to check its location and available information before setting off.</p>
 <div class="road-filter-buttons" role="group" aria-label="Filter locations by type">
@@ -63,6 +63,8 @@ section{margin:28px 0}footer{color:var(--muted);font-size:13px;border-top:1px so
   var buttons = document.querySelectorAll('[data-road-filter]');
   var cards = document.querySelectorAll('[data-road-kind]');
   var status = document.getElementById('road-filter-status');
+  var tools = document.querySelector('.road-tools');
+  if (tools) tools.hidden = false;
   buttons.forEach(function (button) {
     button.addEventListener('click', function () {
       var selection = button.getAttribute('data-road-filter');

@@ -43,14 +43,13 @@ section{margin:28px 0}footer{color:var(--muted);font-size:13px;border-top:1px so
 <body>
 <header style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap"><a class="brand" href="/">RestStop <b>UK</b></a><nav aria-label="Main navigation"><a href="/">Search &amp; map</a> · <a href="/roads/">Roads</a> · <a href="/regions/">Regions</a> · <a href="/counties/">Counties</a></nav></header>
 <main><div id="phase8i-app-cta" style="max-width:1120px;margin:0 auto 8px;padding:0 20px"><a class="btn" href="/">Search nearby stops on the interactive map</a></div>
-<div class="crumbs"><a href="/">Home</a> › <a href="/roads/">Roads</a> › A3</div><div class="hero"><h1>A3 Services &amp; Service Stations</h1><p>Find services on the A3 in both directions. Browse 27 listed service stations, rest areas and lay-bys around Petersfield, Liss, Clanfield and Horndean, with direction and location details to help plan your stop.</p></div><div class="stats"><span><b>27</b> locations</span></div><section class="card" aria-labelledby="road-guide-a3"><h2 id="road-guide-a3">Services and stops on the A3</h2><p>Looking for services on the A3? Browse 27 services, rest areas and lay-bys, including stops around Petersfield, Liss, Clanfield and Horndean. Use the stop pages to check direction and location before you travel.</p><p><a class="btn" href="/#road-a3">Open the A3 on the interactive map</a></p></section><section class="road-tools" aria-labelledby="road-tools-title">
+<div class="crumbs"><a href="/">Home</a> › <a href="/roads/">Roads</a> › A3</div><div class="hero"><h1>A3 Services &amp; Service Stations</h1><p>Find services on the A3 in both directions. Browse 27 listed service stations, rest areas and lay-bys around Petersfield, Liss, Clanfield and Horndean, with direction and location details to help plan your stop.</p></div><div class="stats"><span><b>27</b> locations</span></div><section class="card" aria-labelledby="road-guide-a3"><h2 id="road-guide-a3">Services and stops on the A3</h2><p>Looking for services on the A3? Browse 27 services, rest areas and lay-bys, including stops around Petersfield, Liss, Clanfield and Horndean. Use the stop pages to check direction and location before you travel.</p><p><a class="btn" href="/#road-a3">Open the A3 on the interactive map</a></p></section><section class="road-tools" aria-labelledby="road-tools-title" hidden>
 <h2 id="road-tools-title">Find a stop on the A3</h2>
 <p>Filter the 27 listed locations by type. Open a stop to check its location and available information before setting off.</p>
 <div class="road-filter-buttons" role="group" aria-label="Filter locations by type">
 <button type="button" data-road-filter="all" aria-pressed="true">All (27)</button>
 <button type="button" data-road-filter="service" aria-pressed="false">Services (3)</button>
 <button type="button" data-road-filter="layby" aria-pressed="false">Lay-bys (22)</button>
-<button type="button" data-road-filter="rest" aria-pressed="false">Rest areas (0)</button>
 <button type="button" data-road-filter="other" aria-pressed="false">Other (2)</button>
 </div>
 <p id="road-filter-status" class="road-status" role="status" aria-live="polite">27 locations shown.</p>
@@ -63,6 +62,8 @@ section{margin:28px 0}footer{color:var(--muted);font-size:13px;border-top:1px so
   var buttons = document.querySelectorAll('[data-road-filter]');
   var cards = document.querySelectorAll('[data-road-kind]');
   var status = document.getElementById('road-filter-status');
+  var tools = document.querySelector('.road-tools');
+  if (tools) tools.hidden = false;
   buttons.forEach(function (button) {
     button.addEventListener('click', function () {
       var selection = button.getAttribute('data-road-filter');

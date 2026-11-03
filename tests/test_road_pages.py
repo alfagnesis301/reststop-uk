@@ -1,0 +1,58 @@
+"""Static regression checks for priority road landing pages."""
+from html.parser import HTMLParser
+from pathlib import Path
+import re
+import unittest
+
+ROOT = Path(__file__).resolve().parents[1]
+EXPECTED = {"a303": 10, "a3": 27, "a46": 68}
+
+
+class RoadParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.cards = []
+        self.filters = []
+        self.anchors = []
+        self.canonicals = []
+        self.in_card = False
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "article" and "card" in attrs.get("class", "").split():
+            self.in_card = True
+            self.cards.append(attrs.get("data-road-kind"))
+        if tag == "button" and "data-road-filter" in attrs:
+            self.filters.append(attrs["data-road-filter"])
+        if tag == "link" and attrs.get("rel") == "canonical":
+            self.canonicals.append(attrs.get("href"))
+        if tag == "a" and self.in_card:
+            self.anchors.append(attrs.get("href"))
+
+    def handle_endtag(self, tag):
+        if tag == "article":
+            self.in_card = False
+
+
+class RoadPageTests(unittest.TestCase):
+    def test_priority_road_pages(self):
+        for road, expected in EXPECTED.items():
+            with self.subTest(road=road):
+                path = ROOT / "roads" / road / "index.html"
+                html = path.read_text(encoding="utf-8")
+                parser = RoadParser()
+                parser.feed(html)
+                self.assertEqual(len(parser.cards), expected)
+                self.assertEqual(len(parser.anchors), expected)
+                self.assertTrue(all(h and h.startswith("/stops/") for h in parser.anchors))
+                self.assertTrue(all(t in ("service", "layby", "rest", "other") for t in parser.cards))
+                self.assertEqual(set(["all", "service", "layby", "rest"]) - set(parser.filters), set())
+                self.assertEqual(parser.canonicals, [f"https://reststopuk.co.uk/roads/{road}/"])
+                self.assertIn('aria-live="polite"', html)
+                self.assertIn("data-road-kind", html)
+                self.assertIn("card.hidden = !matches", html)
+                self.assertEqual(len(re.findall(r'<h1\\b', html)), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -35,6 +35,14 @@ class RoadParser(HTMLParser):
 
 
 class RoadPageTests(unittest.TestCase):
+    def test_map_deep_links_register_priority_roads(self):
+        homepage = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn("for (const road of ['A303', 'A3', 'A46']) ensureRoad(road);", homepage)
+        self.assertIn("else if(r.startsWith('road-')) main=roadPage(r.slice(5));", homepage)
+        for road in EXPECTED:
+            html = (ROOT / "roads" / road / "index.html").read_text(encoding="utf-8")
+            self.assertIn(f'href="/#road-{road}"', html)
+
     def test_priority_road_pages(self):
         for road, expected in EXPECTED.items():
             with self.subTest(road=road):

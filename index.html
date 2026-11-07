@@ -1525,7 +1525,10 @@ document.addEventListener('reststop:data-error', e => {
     if(!label) return null;
     if(STATIC_ROAD_KEYS[label]) return STATIC_ROAD_KEYS[label];
 
-    const key = roadKey(label);
+    // SEO road pages link to #road-a303, #road-a3 and #road-a46.
+    // Keep these keys aligned with those URLs rather than generating real-a303, etc.
+    const SEO_ROAD_KEYS = { A303: 'a303', A3: 'a3', A46: 'a46' };
+    const key = SEO_ROAD_KEYS[label] || roadKey(label);
     if(ROADS[key]) return key;
 
     const stops = LOCATIONS.filter(l => l.road === label);

@@ -50,6 +50,20 @@ class RoadPageTests(unittest.TestCase):
             self.assertIn(f'href="/#road-{road}"', html)
             self.assertEqual(aliases[road.upper()], road)
 
+    def test_scotland_a9_area_filter_preserves_all_stops(self):
+        html = (ROOT / "roads" / "scotland" / "a9" / "index.html").read_text(encoding="utf-8")
+        cards = re.findall(r'<article class="card" data-a9-area="([^"]+)">', html)
+        self.assertEqual(len(cards), 148)
+        self.assertEqual(cards.count("Highland"), 74)
+        self.assertEqual(cards.count("Perth and Kinross"), 72)
+        self.assertEqual(cards.count("Stirling"), 2)
+        self.assertIn('id="a9-filter-tools" hidden', html)
+        self.assertIn('tools.hidden=false;', html)
+        self.assertIn("card.hidden=!match;", html)
+        self.assertIn("aria-live=\"polite\"", html)
+        self.assertIn('https://reststopuk.co.uk/roads/scotland/a9/', html)
+        self.assertEqual(len(re.findall(r'<h1\\b', html)), 1)
+
     def test_priority_road_pages(self):
         for road, expected in EXPECTED.items():
             with self.subTest(road=road):

@@ -62,7 +62,7 @@ class RoadPageTests(unittest.TestCase):
         self.assertIn("card.hidden=!match;", html)
         self.assertIn("aria-live=\"polite\"", html)
         self.assertIn('https://reststopuk.co.uk/roads/scotland/a9/', html)
-        self.assertEqual(len(re.findall(r'<h1\\b', html)), 1)
+        self.assertEqual(len(re.findall(r'<h1\b', html)), 1)
 
     def test_priority_road_pages(self):
         for road, expected in EXPECTED.items():

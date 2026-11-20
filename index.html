@@ -1527,7 +1527,7 @@ document.addEventListener('reststop:data-error', e => {
 
     // SEO road pages link to #road-a303, #road-a3 and #road-a46.
     // Keep these keys aligned with those URLs rather than generating real-a303, etc.
-    const SEO_ROAD_KEYS = { A303: 'a303', A3: 'a3', A46: 'a46' };
+    const SEO_ROAD_KEYS = { A303: 'a303', A3: 'a3', A46: 'a46', A38: 'a38', A27: 'a27', A30: 'a30' };
     const key = SEO_ROAD_KEYS[label] || roadKey(label);
     if(ROADS[key]) return key;
 
@@ -1561,7 +1561,7 @@ document.addEventListener('reststop:data-error', e => {
     LOCATIONS.splice(0, LOCATIONS.length, ...mapped);
     // Ensure direct links from the SEO road landing pages resolve immediately,
     // without requiring the visitor to search for the road first.
-    for (const road of ['A303', 'A3', 'A46']) ensureRoad(road);
+    for (const road of ['A303', 'A3', 'A46', 'A38', 'A27', 'A30']) ensureRoad(road);
     for(const k of Object.keys(BY_SLUG)) delete BY_SLUG[k];
     Object.assign(BY_SLUG, Object.fromEntries(LOCATIONS.map(l=>[l.slug,l])));
 

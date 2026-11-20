@@ -50,6 +50,11 @@ class RoadPageTests(unittest.TestCase):
             self.assertIn(f'href="/#road-{road}"', html)
             self.assertEqual(aliases[road.upper()], road)
 
+    def test_a38_direction_controls_use_north_south(self):
+        homepage = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn("const axis=label==='A38' ? 'ns' : (ns>=ew?'ns':'ew');", homepage)
+        self.assertIn("const dirs = r.axis==='ns'?['northbound','southbound']", homepage)
+
     def test_scotland_a9_area_filter_preserves_all_stops(self):
         html = (ROOT / "roads" / "scotland" / "a9" / "index.html").read_text(encoding="utf-8")
         cards = re.findall(r'<article class="card" data-a9-area="([^"]+)">', html)

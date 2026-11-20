@@ -1537,7 +1537,9 @@ document.addEventListener('reststop:data-error', e => {
     const lats=stops.map(s=>s.lat), lons=stops.map(s=>s.lon);
     const ns=Math.max(...lats)-Math.min(...lats);
     const ew=Math.max(...lons)-Math.min(...lons);
-    const axis=ns>=ew?'ns':'ew';
+    // The A38 runs north/south; coordinate-span heuristics can misclassify it.
+    // Preserve the actual direction labels shown on its stop records.
+    const axis=label==='A38' ? 'ns' : (ns>=ew?'ns':'ew');
     const sorted=[...stops].sort((a,b)=>axis==='ns'?a.lat-b.lat:a.lon-b.lon);
     const step=Math.max(1,Math.floor(sorted.length/12));
     const path=sorted.filter((_,i)=>i%step===0 || i===sorted.length-1).map(s=>[s.lat,s.lon]);
